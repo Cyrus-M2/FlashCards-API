@@ -2,6 +2,8 @@ import express from 'express';
 //prisma client
 import { PrismaClient } from '@prisma/client';
 
+import { validateFlashcardInfo } from './middlewares.js';
+
 const app = express()
 //creating instance of prisma client
 const client = new PrismaClient()
@@ -27,16 +29,17 @@ app.get("/flashcards", async (req, res) => {
     }
 });
 
-// route for adding data 
-app.post('/flashcards', (req, res) => {
+// route for creating flashcards
+app.post('/flashcards', [validateFlashcardInfo], async (req, res) => {
     try {
         const {title, content} = req.body
-        client.flashCard.create({
+        const newFlashCard = await client.flashCard.create({
             data: {
                 title,
                 content
             }
         })
+        res.status(201).json(newFlashCard)
     } catch (e) {
         res.status(500).json({ message: "Something went wrong" })
     }
