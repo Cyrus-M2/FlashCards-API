@@ -46,7 +46,7 @@ app.post('/flashcards', [validateFlashcardInfo], async (req, res) => {
 })
 
 // route for getting a specific flashcard
-app.get("/flashcard/:id", async (req, res) => {
+app.get("/flashcards/:id", async (req, res) => {
     try {
         const { id } = req.params
         const flashCard = await client.flashCard.findFirst({
