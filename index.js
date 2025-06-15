@@ -16,7 +16,11 @@ app.get("/", (req, res) => {
 //getting all our flashcards
 app.get("/flashcards", async (req, res) => {
     try {
-        const flashCards = await client.flashCard.findMany();
+        const flashCards = await client.flashCard.findMany({
+            where: {
+                isDeleted: false
+            }
+        });
         res.status(200).json(flashCards)
     } catch (e) {
         res.status(500).json({message: "Something went wrong"});
@@ -38,6 +42,64 @@ app.post('/flashcards', (req, res) => {
     }
 })
 
+// route for getting a specific flashcard
+app.get("/flashcard/:id", async (req, res) => {
+    try {
+        const { id } = req.params
+        const flashCard = await client.flashCard.findFirst({
+            where: {
+                id
+            }
+        })
+        if (flashCard) {
+            return res.status(200).json(flashCard)
+        } else {
+            return res.status(404).json({message: "FlashCard is not found"});
+        }
+    } catch (e) {
+        res.status(500).json({ message: "Something went wrong" })
+    }
+})
+
+//implementing route for deletion
+app.delete("/flashcards/:id", async (req, res) => {
+    try {
+        const {id} = req.params
+        await client.flashCard.update({
+            where: {
+                id
+            },
+            data: {
+                isDeleted: true
+            }
+        })
+        res.status(200).json({message: "FlashCard deleted successfully"})
+    }
+    catch(e) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+})
+
+// route for updating (put/patch)
+app.patch("/flashcards/:id", async (req, res) => {
+    try {
+        const {title, content} = req.body
+        const {id} = req.params
+        const flashCard = await client.flashCard.update({
+            where: {
+                id
+            },
+            data: {
+                title: title && title,
+                content: content && content
+            }
+        })
+        res.status(200).json(flashCard)
+    }
+    catch(e) {
+        res.status(500).json({message: "Something went wrong"});
+    }
+})
 
 let port;
 if (process.env.PORT) {
